@@ -20,11 +20,11 @@
                 <!--Home 글자 대신 home 표시 icon 넣음-->
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="./blog_list.html"><i class="fas fa-blog"></i></a>
+              <a class="nav-link" href="./blog_list.html">Blog</a>
                 <!--Blog 글자 대신 blog 표시 icon 넣음-->
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="./about_me.html"><i class="far fa-user"></i></a>
+              <a class="nav-link" href="./about_me.html">About Me</a>
                 <!--About me 글자 대신 user 표시 icon 넣음-->
             </li>
             <li class="nav-item dropdown">
@@ -83,7 +83,9 @@
 
   <div class="container mt-3">
     <div class="row">
-      <div class="col-md-8 col-lg-9"> <!--왼쪽: Blog Post-->
+      <div class="col-md-8 col-lg-9" id="main-area"> <!--왼쪽: Blog Post-->
+          <h1>Blog</h1>
+          {% if post_list.exists %}
           {% for p in post_list %}
           <!-- Blog post-->
           <div class="card mb-4">
@@ -106,6 +108,9 @@
               </div>
           </div>
         {% endfor %}
+          {% else %}
+            <h2>아직 게시물이 없습니다.</h2>
+          {% endif %}
 
       <!-- Pagination, 페이지 번호-->
         <ul class="pagination justify-content-center my-4">
