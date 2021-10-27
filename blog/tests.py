@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from bs4 import BeautifulSoup
+from django.contrib.auth.models import User
 from .models import Post
 
 # Create your tests here.
@@ -7,6 +8,8 @@ class TestView(TestCase):
     # 하나의 TestCase 내에서 테스트 전 기본 설정 작업
     def setUp(self):
         self.client = Client()  # Client()를 사용하겠다.
+        self.user_james = User.objects.create_user(username='James', password='somepassword')
+        self.user_trump = User.objects.create_user(username='Trump', password='somepassword')
 
     # 내비게이션 바 점검
     def navbar_test(self, soup):
@@ -56,11 +59,13 @@ class TestView(TestCase):
         # 포스트(게시물)이 2개 존재하는 경우 (생성하기)
         post_001 = Post.objects.create(
             title="첫 번째 포스트입니다.",
-            content="Hello World. We are the world."
+            content="Hello World. We are the world.",
+            author=self.user_james,
         )
         post_002 = Post.objects.create(
             title="두 번째 포스트입니다.",
-            content="1등이 전부가 아니잖아요."
+            content="1등이 전부가 아니잖아요.",
+            author=self.user_trump,
         )
         # 2개가 생성되었냐
         self.assertEqual(Post.objects.count(), 2)
@@ -76,12 +81,17 @@ class TestView(TestCase):
         # '아직 게시물이 없습니다' 안내문구가 더 이상 나타나지 않는가
         self.assertNotIn('아직 게시물이 없습니다', main_area.text)
 
+        # 메인 영역에서 작성자명으로 james, trump가 나타나는가
+        self.assertIn(self.user_james.username.upper(), main_area.text)
+        self.assertIn(self.user_trump.username.upper(), main_area.text)
+
 
     def test_post_detail(self):
         # 포스트 하나 생성
         post_001 = Post.objects.create(
             title="첫 번째 포스트입니다.",
-            content="Hello World. We are the world."
+            content="Hello World. We are the world.",
+            author=self.user_james,
         )
         # 이 포스트의 url이 /blog/1인가
         self.assertEqual(post_001.get_absolute_url(), '/blog/1/')
@@ -108,3 +118,6 @@ class TestView(TestCase):
 
         # 포스트의 내용이 post_area에 있는가
         self.assertIn(post_001.content, post_area.text)
+
+        # 작성자 JAMES가 post_area에 있는가
+        self.assertIn(self.user_james.username.upper(), post_area.text)

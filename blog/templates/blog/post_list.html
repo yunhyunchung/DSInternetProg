@@ -26,7 +26,7 @@
               </div>
               <div class="card-footer">
                   <!--날짜,시간 형식(템플릿 필터)-->
-                  <div class="small text-muted">{{ p.created_at | date:"yy-m-d h:m:s"}} by 작성자(개발 예정)
+                  <div class="small text-muted">{{ p.created_at | date:"20y-m-d h:m:s"}} by {{ p.author | upper }}
                   </div>
               </div>
           </div>

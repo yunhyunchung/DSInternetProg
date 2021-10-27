@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 import os
 
 # Create your models here.
@@ -15,11 +16,12 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # 처음 생성 시각
     updated_at = models.DateTimeField(auto_now=True)  # 수정 시각
 
-    #author: 추후 작성 예정
+    # 작성자 - 여러 개의 post 모델과 1명의 user 연결 (다대일 관계)
+    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     #Post 제목
     def __str__(self):
-        return f'[{self.pk}]{self.title}'
+        return f'[{self.pk}]{self.title} :: {self.author}'
 
     #각각의 Post url
     def get_absolute_url(self):
