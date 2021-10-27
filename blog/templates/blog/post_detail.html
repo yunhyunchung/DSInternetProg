@@ -7,20 +7,20 @@
 {% block main_area %}
                     <!-- Post content-->
                     <div id="post-area">
-                        <!-- Post header-->
+                        <!-- Post header 포스트 타이틀, hook_text, 작성시간-->
                         <header class="mb-4">
                             <!-- Post title-->
                             <h1 class="fw-bolder mb-1">{{ post.title }}</h1>
-                            <h5 class="text-muted">{{ post.hook_text }}</h5>
+                            <h5 class="text-muted">{{ post.hook_text }}</h5>  <!--if문 없음-->
                             <!-- Post meta content-->
                             <div class="text-muted fst-italic mb-2">Posted on {{ post.created_at | date:"yy-m-d h:m:s"}} by 작성자(개발 예정)</div>
                             <!-- Post categories-->
                             <a class="badge bg-secondary text-decoration-none link-light" href="#!">Web Design</a>
                             <a class="badge bg-secondary text-decoration-none link-light" href="#!">Freebies</a>
                         </header>
-                        <!-- Preview image figure-->
+                        <!-- 대표 이미지 보여주기-->
                         <figure class="mb-4">
-                            {% if post.head_image %}
+                            {% if post.head_image %}  <!--{{ post.title }}-->
                                 <img class="img-fluid rounded" src="{{ post.head_image.url }}" alt="{{ post.title }}의 head image">
                             {% else %}
                                 <img class="img-fluid rounded" src="https://picsum.photos/seed/{{ post.id }}/800/200" alt="random image">
@@ -29,9 +29,10 @@
                         <!-- Post content-->
                         <section class="mb-5">
                             <p> {{ post.content }} </p>
-                            <!-- 첨부파일 다운로드 버튼 -->
-                            {% if post.file_upload %}
+                            <!-- 첨부파일 다운로드 버튼(detail 페이지에만) -->
+                            {% if post.file_upload %}  <!-- <a>태그 안에 download 꼭 명시 -->
                                 <a href="{{ post.file_upload.url }}" class="btn btn-outline-dark" role="button" download>
+                                    <!-- 첨부파일명과 확장자 아이콘 나타내기 -->
                                     Download:
 
                                     {% if post.get_file_ext == 'xlsx' or post.get_file_ext == 'xls' %}
@@ -42,7 +43,7 @@
                                         <i class="fas fa-file"></i>
                                     {% endif %}
 
-                                    {{ post.get_file_name }}
+                                    {{ post.get_file_name }}  <!--첨부파일명(확장자 포함)-->
                                 </a>
                             {% endif %}
                         </section>
@@ -90,5 +91,4 @@
                             </div>
                         </div>
                     </div>
-                </div>
 {% endblock %}

@@ -1,25 +1,31 @@
 {% extends 'blog/base.html' %}
-
+<!--메인 영역만 정의-->
 {% block main_area %}
           <h1>Blog</h1>
+            <!--test 실행 시 post_list가 존재하지 않으면 if-else로 안내문구 출력-->
           {% if post_list.exists %}
           {% for p in post_list %}
           <!-- Blog post-->
           <div class="card mb-4">
-              {% if p.head_image %}
+              <!--대표 이미지 보여주기-->
+              {% if p.head_image %}  <!--{{ p }}: p.title -->
                 <img class="card-img-top" src="{{ p.head_image.url }}" alt="{{ p }} head image" >
-              {% else %}
+              {% else %} <!--없으면 임의의 이미지 가져오기-->
                 <img class="card-img-top" src="https://picsum.photos/seed/{{ p.id }}/800/200" alt="random image">
               {% endif %}
               <div class="card-body">
+                  <!--title을 대문자로(템플릿 필터)-->
                   <h2 class="card-title h4">{{ p.title | upper }}</h2>
+                  <!--목록 페이지만 hook_text if문 있음-->
                   {% if p.hook_text %}
                     <h5 class="text-muted">{{ p.hook_text }}</h5>
                   {% endif %}
+                  <!--본문 미리보기 기능-->
                   <p class="card-text">{{ p.content | truncatewords:45 }}</p>
                   <a class="btn btn-primary" href="{{ p.get_absolute_url }}">Read more &rarr;</a>
               </div>
               <div class="card-footer">
+                  <!--날짜,시간 형식(템플릿 필터)-->
                   <div class="small text-muted">{{ p.created_at | date:"yy-m-d h:m:s"}} by 작성자(개발 예정)
                   </div>
               </div>
@@ -37,5 +43,4 @@
             <li class="page-item"><a class="page-link" href="#!">Older &rarr;</a></li>
               <!-- &rarr; = right arrow 오른쪽 화살표 그림 표시-->
         </ul>
-    </div>
 {% endblock %}
