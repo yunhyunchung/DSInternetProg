@@ -62,6 +62,25 @@ class TestView(TestCase):
         self.assertIn(f'{self.category_culture.name} ({self.category_culture.post_set.count()})', category.text)
         self.assertIn(f'미분류 (1)', category.text)
 
+    def test_category_page(self):
+        # 카테고리 페이지를 url로 불러오기
+        response = self.client.get(self.category_programming.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        # beautifulsoup4로 html을 parser하기
+        soup = BeautifulSoup(response.content, 'html.parser')
+        # soup를 검사하여 navbar, category 테스트
+        self.navbar_test(soup)
+        self.category_test(soup)
+        # 카테고리 name(badge 안 text)을 포함하고 있는가
+        self.assertIn(self.category_programming.name, soup.h1.text)
+        # 카테고리에 포함된 post만 포함하고 있는가
+        main_area = soup.find('div', id='main-area')
+        self.assertIn(self.category_programming.name, main_area.text)
+        self.assertIn(self.post_001.title, main_area.text)
+        self.assertNotIn(self.post_002.title, main_area.text)
+        self.assertNotIn(self.post_003.title, main_area.text)
+
+
     def test_post_list(self):
         # 3개가 생성되었냐
         self.assertEqual(Post.objects.count(), 3)

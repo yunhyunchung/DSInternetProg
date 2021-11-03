@@ -13,6 +13,9 @@ class Category(models.Model):
     def __str__(self):  #카테고리 이름 반환
         return self.name
 
+    def get_absolute_url(self):  # 카테고리 url (slug 이용)
+        return f'/blog/category/{self.slug}/'
+
     # Meta로 모델의 복수형(-s) 알려주기
     class Meta:
         verbose_name_plural = 'Categories'
