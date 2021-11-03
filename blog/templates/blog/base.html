@@ -38,8 +38,10 @@
               <div class="row">
                       <ul>  <!-- "카테고리 (숫자)" 클릭하면 해당 카테고리 페이지로 이동 -->
                           {% for c in categories %}
-                          <li><a href="http://127.0.0.1:8000/blog/category/{{ c.slug }}">{{c}} ({{c.post_set.count}})</a></li>
+                          <!-- <li><a href="http://127.0.0.1:8000/blog/category/{{ c.slug }}">{{c}} ({{c.post_set.count}})</a></li> -->
+                          <li><a href="{{ c.get_absolute_url }}">{{c}} ({{c.post_set.count}})</a></li>
                           {% endfor %}
+                          <!-- 미분류는 주소에 slug값(고유번호)이 없기 때문에 get_absolute_url 대신에 절대 주소 이용 -->
                           <li><a href="http://127.0.0.1:8000/blog/category/no_category/">미분류 ({{no_category_post_count}})</a></li>
                       </ul>
               </div>

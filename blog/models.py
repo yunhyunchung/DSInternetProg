@@ -5,6 +5,17 @@ import os
 # Create your models here.
 # 데이터베이스 생성, 데베에 모델 변화 내용 알리기(반영): python manage.py makemigrations => migrate
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=200, unique=True, allow_unicode=True)
+    # slug: 사람이 읽을 수 있는 텍스트로 고유 URL 만들기 (한글도 허용)
+
+    def __str__(self):  #카테고리 이름 반환
+        return self.name
+
+    def get_absolute_url(self):  # 카테고리 url (slug 이용)
+        return f'/blog/tag/{self.slug}/'
+
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(max_length=200, unique=True, allow_unicode=True)
@@ -33,8 +44,10 @@ class Post(models.Model):
 
     # 작성자 - 여러 개의 post 모델과 1명의 user 연결 (다대일 관계)
     author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    # Post 모델에 category 필드 추가
+    # Post 모델에 category 필드 추가(Category 모델과 연결)
     category = models.ForeignKey(Category, null=True, blank=True, on_delete=models.SET_NULL)
+    # 다대다 관계: Post 모델에 tag 필드 추가(Tag 모델과 연결)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     #Post 제목
     def __str__(self):
