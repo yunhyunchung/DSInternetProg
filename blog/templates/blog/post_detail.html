@@ -7,8 +7,14 @@
 {% block main_area %}
                     <!-- Post content-->
                     <div id="post-area">
-                        <!-- Post header 포스트 타이틀, hook_text, 작성시간-->
+                        <!-- Post header 안: 포스트 타이틀, hook_text, 작성시간-->
                         <header class="mb-4">
+                            <!--카테고리 뱃지: 상세페이지에는 p->post -->
+                            {% if post.category %}
+                                <span class="badge badge-secondary float-right">{{ post.category }}</span>
+                            {% else %}
+                                <span class="badge badge-secondary float-right">미분류</span>
+                            {% endif %}
                             <!-- Post title-->
                             <h1 class="fw-bolder mb-1">{{ post.title }}</h1>
                             <h5 class="text-muted">{{ post.hook_text }}</h5>  <!--if문 없음-->
