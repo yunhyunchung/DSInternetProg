@@ -106,6 +106,31 @@ class TestView(TestCase):
         self.assertNotIn(self.post_002.title, main_area.text)
         self.assertNotIn(self.post_003.title, main_area.text)
 
+    def test_create_post(self):
+        # 로그인 하지 않으면 포스트 작성 접근 금지
+        response = self.client.get('/blog/create_post/')
+        self.assertNotEqual(response.status_code, 200)
+        # 로그인 한다.
+        self.client.login(username='Trump', password='somepassword')
+
+        response = self.client.get('/blog/create_post/')
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        self.assertEqual(soup.title.text, 'Create Post - Blog')
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('Create New Post', main_area.text)
+
+        # 블로그 포스트 작성하고 <submit> 버튼을 클릭했을 때
+        self.client.post('/blog/create_post/',
+                         {
+                             'title': 'Post form 만들기',
+                             'content': "Post form 페이지 만들기",
+                         })
+        last_post = Post.objects.last()
+        self.assertEqual(last_post.title, "Post form 만들기")
+        self.assertEqual(last_post.author.username, 'Trump')
+
     def test_post_list(self):
         # 3개가 생성되었냐
         self.assertEqual(Post.objects.count(), 3)
