@@ -139,6 +139,44 @@ class TestView(TestCase):
         self.assertEqual(last_post.title, "Post form 만들기")
         self.assertEqual(last_post.author.username, 'James')
 
+    def test_update_post(self):
+        update_url = f'/blog/update_post/{ self.post_003.pk }/'  # 포스트 수정 페이지 url
+        # 로그인 하지 않은 경우
+        response = self.client.get(update_url)
+        self.assertNotEqual(response.status_code, 200)
+
+        # 로그인 했지만 작성자(Trump)가 아닌 경우: James
+        self.assertNotEqual(self.post_003.author, self.user_james)  # 작성자가 아닌 다른 사람인지 확인
+        self.client.login(username='James', password='somepassword')  # username= self.user_james.username
+        response = self.client.get(update_url)
+        self.assertEqual(response.status_code, 403)  # 403: forbidden (접근 권한 금지)
+
+        # 작성자가 로그인해서 접근하는 경우: Trump
+        self.client.login(username='Trump', password='somepassword')  # username= self.post_003.author.username
+        response = self.client.get(update_url)
+        self.assertEqual(response.status_code, 200)  # 정상 접근
+
+        # 수정 페이지가 잘 나타나는가
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertEqual(soup.title.text, "Edit Post - Blog")
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('Edit Post', main_area.text)
+
+        # 실제 수정 후 확인 - 수정한 내용을 잘 반영(저장)하는가
+        response = self.client.post(update_url,
+                         {
+                            'title': '세 번째 포스트 수정',
+                             'content': "안녕? 우리는 하나/... 반가워요",
+                            'category': self.category_culture.pk,   # category는 외래키(다대일 관계)
+                         }, follow=True)  # update_url을 따라간다
+        # 수정한 내용을 다시 파싱해서 받아오기
+        soup = BeautifulSoup(response.content, 'html.parser')
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('세 번째 포스트 수정', main_area.text)
+        self.assertIn('안녕? 우리는 하나/... 반가워요', main_area.text)
+        self.assertIn(self.category_culture.name, main_area.text)  # 특정 pk에 해당하는 category 이름 출력 확인
+
+
     def test_post_list(self):
         # 3개가 생성되었냐
         self.assertEqual(Post.objects.count(), 3)

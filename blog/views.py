@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Post, Category, Tag
+from django.core.exceptions import PermissionDenied
 
 # CBV
 class PostCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):  # UserPasses~와 CreateView 순서대로...
@@ -21,6 +22,20 @@ class PostCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):  # UserPa
             return super(PostCreate, self).form_valid(form)  # 새로 생성한 포스트 페이지 리턴
         else:
             return redirect('/blog/')
+
+class PostUpdate(LoginRequiredMixin, UpdateView):  # 모델명_form.html: 기본 템플릿
+    model = Post
+    fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category', 'tags']
+
+    template_name = 'blog/post_update_form.html'
+
+    # GET 방식의 요청인지 POST 방식의 요청인지 확인하는 함수
+    def dispatch(self, request, *args, **kwargs):
+        # 로그인한 방문자가 특정 포스트의 작성자가 맞는지 확인
+        if request.user.is_authenticated and request.user == self.get_object().author:
+            return super(PostUpdate, self).dispatch(request, *args, **kwargs)
+        else:
+            raise PermissionDenied  # 403 오류 - 접근 권한 없음
 
 class PostList(ListView):
     model = Post
