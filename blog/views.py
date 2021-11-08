@@ -1,18 +1,24 @@
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Post, Category, Tag
 
 # CBV
-class PostCreate(LoginRequiredMixin, CreateView):
+class PostCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):  # UserPasses~와 CreateView 순서대로...
     model = Post
     fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category', 'tags']
 
+    # 이 클래스에 접근 가능한 사용자 설정
+    def test_func(self):
+        return self.request.user.is_superuser or self.request.user.is_staff
+
+    # 작성한 폼 처리
     def form_valid(self, form):
         current_user = self.request.user
-        if current_user.is_authenticated:
-            form.instance.author = current_user
-            return super(PostCreate, self).form_valid(form)
+        # 로그인 & 스태프 또는 슈퍼유저(관리자)
+        if current_user.is_authenticated and (current_user.is_staff or current_user.is_superuser):
+            form.instance.author = current_user   # 로그인한 사용자를 작성자로 자동 입력
+            return super(PostCreate, self).form_valid(form)  # 새로 생성한 포스트 페이지 리턴
         else:
             return redirect('/blog/')
 
