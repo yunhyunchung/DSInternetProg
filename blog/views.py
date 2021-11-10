@@ -3,11 +3,12 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Post, Category, Tag
 from django.core.exceptions import PermissionDenied
+from django.utils.text import slugify
 
 # CBV
 class PostCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):  # UserPasses~와 CreateView 순서대로...
     model = Post
-    fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category', 'tags']
+    fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category']
 
     # 이 클래스에 접근 가능한 사용자 설정
     def test_func(self):
@@ -19,13 +20,30 @@ class PostCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):  # UserPa
         # 로그인 & 스태프 또는 슈퍼유저(관리자)
         if current_user.is_authenticated and (current_user.is_staff or current_user.is_superuser):
             form.instance.author = current_user   # 로그인한 사용자를 작성자로 자동 입력
-            return super(PostCreate, self).form_valid(form)  # 새로 생성한 포스트 페이지 리턴
+            response = super(PostCreate, self).form_valid(form)  # 새로 생성한 포스트 페이지 저장
+            # input에 입력한 tag들 처리 (tag를 구분자로 분리 & 새로 생성한 tag의 slug 생성 & 새 포스트에 입력한 tag 연결)
+            tags_str = self.request.POST.get('tags_str')
+            if tags_str:
+                tags_str = tags_str.strip()
+
+                tags_str = tags_str.replace(',', ';')
+                tags_list = tags_str.split(';')
+
+                for t in tags_list:
+                    t = t.strip()
+                    tag, is_tag_created = Tag.objects.get_or_create(name=t)
+                    if is_tag_created:
+                        tag.slug = slugify(t, allow_unicode=True)
+                        tag.save()
+                    self.object.tags.add(tag)
+
+            return response
         else:
             return redirect('/blog/')
 
 class PostUpdate(LoginRequiredMixin, UpdateView):  # 모델명_form.html: 기본 템플릿
     model = Post
-    fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category', 'tags']
+    fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category']
 
     template_name = 'blog/post_update_form.html'
 
@@ -36,6 +54,40 @@ class PostUpdate(LoginRequiredMixin, UpdateView):  # 모델명_form.html: 기본
             return super(PostUpdate, self).dispatch(request, *args, **kwargs)
         else:
             raise PermissionDenied  # 403 오류 - 접근 권한 없음
+
+    # template(html)로 추가 인자 넘기기 - 여기선 기존의 태그를 이은 문자열 'tags_str_default'
+    def get_context_data(self, **kwargs):
+        context = super(PostUpdate, self).get_context_data()
+        if self.object.tags.exists():
+            tags_str_list = list()
+            for t in self.object.tags.all():
+                tags_str_list.append(t.name)
+            context['tags_str_default'] = '; '.join(tags_str_list)
+        return context
+
+    # 폼이 유효하면 받은 tags 값 처리
+    def form_valid(self, form):
+        response = super(PostUpdate, self).form_valid(form)  # 새로 생성한 포스트 페이지 저장
+        self.object.tags.clear()  # 수정 페이지에서는 이미 존재하는 tags 제거 -> 새로 들어온 tags로 채움
+
+        # input에 입력한 tag들 처리 (tag를 구분자로 분리 & 새로 생성한 tag의 slug 생성 & 새 포스트에 입력한 tag 연결)
+        tags_str = self.request.POST.get('tags_str')
+        if tags_str:
+            tags_str = tags_str.strip()
+
+            tags_str = tags_str.replace(',', ';')
+            tags_list = tags_str.split(';')
+
+            for t in tags_list:
+                t = t.strip()
+                tag, is_tag_created = Tag.objects.get_or_create(name=t)
+                if is_tag_created:
+                    tag.slug = slugify(t, allow_unicode=True)
+                    tag.save()
+                self.object.tags.add(tag)
+
+        return response
+
 
 class PostList(ListView):
     model = Post

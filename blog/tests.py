@@ -128,16 +128,25 @@ class TestView(TestCase):
         main_area = soup.find('div', id='main-area')
         self.assertIn('Create New Post', main_area.text)
 
+        tag_str_input = main_area.find('input', id='id_tags_str')
+        self.assertTrue(tag_str_input)  # Null이 아닌가? = input 태그가 존재하는가?
+
         # 블로그 포스트 작성하고 <submit> 버튼을 클릭했을 때
         self.client.post('/blog/create_post/',
                          {
                              'title': 'Post form 만들기',
                              'content': "Post form 페이지 만들기",
+                             'tags_str': 'new tag; 한글 태그, python'
                          })
         self.assertEqual(Post.objects.count(), 4)
         last_post = Post.objects.last()
         self.assertEqual(last_post.title, "Post form 만들기")
         self.assertEqual(last_post.author.username, 'James')
+
+        self.assertEqual(last_post.tags.count(), 3)  # 새로 생성한 포스트의 태그는 3개인가
+        self.assertTrue(Tag.objects.get(name='new tag'))  # 이 태그가 새로 생성되어 존재하는가
+        self.assertTrue(Tag.objects.get(name='한글 태그'))
+        self.assertEqual(Tag.objects.count(), 5) # 데이터베이스에 저장된 tag 모델 객체가 총 5개인가
 
     def test_update_post(self):
         update_url = f'/blog/update_post/{ self.post_003.pk }/'  # 포스트 수정 페이지 url
@@ -162,19 +171,30 @@ class TestView(TestCase):
         main_area = soup.find('div', id='main-area')
         self.assertIn('Edit Post', main_area.text)
 
+        tag_str_input = main_area.find('input', id='id_tags_str')
+        self.assertTrue(tag_str_input)  # Null이 아닌가? = input 태그가 존재하는가?
+        # 기존의 태그가 input의 value 속성에 저장되었는가
+        self.assertIn('파이썬 공부; python', tag_str_input.attrs['value'])
+
         # 실제 수정 후 확인 - 수정한 내용을 잘 반영(저장)하는가
         response = self.client.post(update_url,
                          {
                             'title': '세 번째 포스트 수정',
                              'content': "안녕? 우리는 하나/... 반가워요",
                             'category': self.category_culture.pk,   # category는 외래키(다대일 관계)
+                             'tags_str': '파이썬 공부; 한글 태그, some tag'
                          }, follow=True)  # update_url을 따라간다
-        # 수정한 내용을 다시 파싱해서 받아오기
-        soup = BeautifulSoup(response.content, 'html.parser')
+
+        soup = BeautifulSoup(response.content, 'html.parser')   # 수정한 내용을 다시 파싱해서 받아오기
         main_area = soup.find('div', id='main-area')
         self.assertIn('세 번째 포스트 수정', main_area.text)
         self.assertIn('안녕? 우리는 하나/... 반가워요', main_area.text)
         self.assertIn(self.category_culture.name, main_area.text)  # 특정 pk에 해당하는 category 이름 출력 확인
+
+        self.assertIn('파이썬 공부', main_area.text)
+        self.assertIn('한글 태그', main_area.text)
+        self.assertIn('some tag', main_area.text)
+        self.assertNotIn('python', main_area.text)
 
 
     def test_post_list(self):

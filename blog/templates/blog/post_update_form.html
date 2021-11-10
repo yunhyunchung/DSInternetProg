@@ -8,6 +8,12 @@
         {% csrf_token %}
         <table>
             {{ form }}
+            <tr>
+                <th><label for="id_tags_str">Tags:</label></th>
+                <td><input type="text" name="tags_str" required id="id_tags_str" value="{{ tags_str_default }}"></td>
+                <!-- input의 value 속성에 기존 태그가 자동으로 입력되어 있도록 함
+                     : views의 PostUpdate의 get_context_data()로 tags_str_default 값 구현 -->
+            </tr>
         </table>
         <button type="submit" class="btn btn-primary float-right">Submit</button>
     </form>
