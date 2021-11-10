@@ -1,4 +1,5 @@
 {% extends 'blog/base_full_width.html' %}
+{% load crispy_forms_tags %}
 {% block head_title %}Edit Post - Blog{% endblock %}
 
 {% block main_area %}
@@ -6,15 +7,16 @@
     <hr/>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <table>
-            {{ form }}
-            <tr>
-                <th><label for="id_tags_str">Tags:</label></th>
-                <td><input type="text" name="tags_str" required id="id_tags_str" value="{{ tags_str_default }}"></td>
-                <!-- input의 value 속성에 기존 태그가 자동으로 입력되어 있도록 함
-                     : views의 PostUpdate의 get_context_data()로 tags_str_default 값 구현 -->
-            </tr>
-        </table>
+        {{ form | crispy }}
+        <div id="div_id_tags_str">
+            <label for="id_tags_str">Tags:</label>
+            <input type="text" name="tags_str" required id="id_tags_str" class="textinput textInput form-control"
+                   value="{{ tags_str_default }}">
+                <!-- input의 value 속성에 기존 태그가 자동으로 입력되어 있도록 함: views의 PostUpdate의 get_context_data()로 tags_str_default 값 구현 -->
+        </div>
+        <br/>
         <button type="submit" class="btn btn-primary float-right">Submit</button>
     </form>
+    <!-- markdownx 사용: 실시간으로 마크다운 적용하여 화면에 렌더링 -->
+    {{ form.media }}
 {% endblock %}

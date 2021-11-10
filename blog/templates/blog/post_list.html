@@ -39,7 +39,7 @@
                     <h5 class="text-muted">{{ p.hook_text }}</h5>
                   {% endif %}
                   <!--본문 미리보기 기능-->
-                  <p class="card-text">{{ p.content | truncatewords:45 }}</p>
+                  <p class="card-text">{{ p.get_content_markdown | truncatewords_html:50 | safe }}</p>
                   <!--해당 포스트의 모든 tag 출력(+ tag icon)-->
                   {% if p.tags.exists %}
                     <i class="fas fa-tags"></i>

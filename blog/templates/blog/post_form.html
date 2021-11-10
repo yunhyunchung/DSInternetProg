@@ -1,4 +1,5 @@
 {% extends 'blog/base_full_width.html' %}
+{% load crispy_forms_tags %}
 {% block head_title %}Create Post - Blog{% endblock %}
 
 {% block main_area %}
@@ -6,14 +7,16 @@
     <hr/>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <table>
-            {{ form }}
-            <!-- tag 필드 추가: tag를 직접 입력할 수 있는 input -->
-            <tr>
-                <th><label for="id_tags_str">Tags:</label></th>
-                <td><input type="text" name="tags_str" required id="id_tags_str"></td>
-            </tr>
-        </table>
+        {{ form | crispy }}
+        <!-- tag 필드 추가: tag를 직접 입력할 수 있는 input -->
+        <div id="div_id_tags_str">
+            <label for="id_tags_str">Tags:</label>
+            <input type="text" name="tags_str" required id="id_tags_str"
+                   class="textinput textInput form-control">
+        </div>
+        <br/>
         <button type="submit" class="btn btn-primary float-right">Submit</button>
     </form>
+    <!-- markdownx 사용: 실시간으로 마크다운 적용하여 화면에 렌더링 -->
+    {{ form.media }}
 {% endblock %}

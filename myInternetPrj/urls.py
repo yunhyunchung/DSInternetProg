@@ -24,6 +24,7 @@ urlpatterns = [
     path('blog/', include('blog.urls')),  # 서버IP/blog
     path('admin/', admin.site.urls),      # 서버IP/admin
     path('', include('single_pages.urls')),   #서버IP/
+    path('markdownx/', include('markdownx.urls'))
 ]
 # 이미지 media URL 지정하기
 # 이미지 /media/ url 접속하면 media_root에 저장된 이미지 열기 실행

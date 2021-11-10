@@ -40,7 +40,7 @@
                         </figure>
                         <!-- Post content-->
                         <section class="mb-5">
-                            <p> {{ post.content }} </p>
+                            <p> {{ post.get_content_markdown | safe }} </p>
                             <!-- 해당 포스트의 모든 tag 출력 (상세: p->post) -->
                             {% if post.tags.exists %}
                                 <i class="fas fa-tags"></i>
