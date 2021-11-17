@@ -1,9 +1,10 @@
 from django.contrib import admin
-from .models import Post, Category, Tag
+from .models import Post, Category, Tag, Comment
 from markdownx.admin import MarkdownxModelAdmin
 
 # 관리자 페이지에 Post 등록, Markdown(적용한 preview) 등록
 admin.site.register(Post, MarkdownxModelAdmin)
+admin.site.register(Comment)
 
 # Category 모델의 name 필드를 이용해 자동으로 slug 만든다.
 class CategoryAdmin(admin.ModelAdmin):
