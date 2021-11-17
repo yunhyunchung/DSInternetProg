@@ -50,6 +50,56 @@ class TestView(TestCase):
             content='첫 번째 댓글입니다.'
         )
 
+    # 댓글 작성 폼 test
+    def test_comment_form(self):
+        self.assertEqual(Comment.objects.count(),1)
+        self.assertEqual(self.post_001.comment_set.count(), 1)
+
+        # 로그인하지 않은 상태 (메시지 show, 댓글 작성 폼 not show)
+        response = self.client.get(self.post_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        comment_area = soup.find('div', id='comment-area')
+        self.assertIn('Log in and leave a comment', comment_area.text)
+        self.assertFalse(comment_area.find('form', id='comment-form'))
+
+        # 로그인 한 상태 (메시지 not show, 댓글 작성 폼 show)
+        self.client.login(username='Trump', password='somepassword')
+
+        response = self.client.get(self.post_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        comment_area = soup.find('div', id='comment-area')
+        self.assertNotIn('Log in and leave a comment', comment_area.text)
+
+        comment_form = comment_area.find('form', id='comment-form')  # 폼이 보인다
+        self.assertTrue(comment_form.find('textarea', id='id_content'))
+
+        response = self.client.post(  # 새 댓글 추가 (POST 방식 접근)
+            self.post_001.get_absolute_url() + 'new_comment/',
+            {
+                'content': "두 번째 댓글입니다."
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(Comment.objects.count(), 2)  # 댓글 추가 후 전체 댓글 수 2개
+        self.assertEqual(self.post_001.comment_set.count(), 2)
+
+        # 댓글이 잘 추가되었는가 확인
+        new_comment = Comment.objects.last()
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertIn(new_comment.post.title, soup.title.text)  # 해당 댓글이 달린 post title 확인
+
+        comment_area = soup.find('div', id='comment-area')
+        new_comment_div = comment_area.find('div', id=f'comment-{new_comment.pk}')
+        self.assertIn('Trump', new_comment_div.text)
+        self.assertIn('두 번째 댓글입니다.', new_comment_div.text)
+
+
     # 내비게이션 바 점검
     def navbar_test(self, soup):
         # 밑의 2개의 함수의 공통 부분

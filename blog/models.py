@@ -81,4 +81,4 @@ class Comment(models.Model):
         return f'{self.author}::{self.content}'
 
     def get_absolute_url(self):
-        return f'{self.post.get_absolute_url()}#comment-{{ self.pk }}'
+        return f'{self.post.get_absolute_url()}#comment-{ self.pk }'
