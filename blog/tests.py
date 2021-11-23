@@ -37,7 +37,7 @@ class TestView(TestCase):
             category=self.category_culture,
         )
         self.post_003 = Post.objects.create(    # 카테고리 없는 post
-            title="세 번째 포스트입니다.",
+            title="세 번째 파이썬 포스트입니다.",
             content="세 번째 포스트입니다.",
             author=self.user_trump,
         )
@@ -49,6 +49,28 @@ class TestView(TestCase):
             author=self.user_trump,
             content='첫 번째 댓글입니다.'
         )
+
+    # 검색 test
+    def test_search(self):
+        post_004 = Post.objects.create(
+            title="파이썬에 대한 포스트입니다.",
+            content="Hello world...",
+            author=self.user_trump
+        )
+
+        response = self.client.get('/blog/search/파이썬/')
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        main_area = soup.find('div', id='main-area')
+
+        self.assertIn('Search: 파이썬 (2)', main_area.text)
+        self.assertNotIn(self.post_001.title, main_area.text)
+        self.assertNotIn(self.post_002.title, main_area.text)
+        self.assertIn(self.post_003.title, main_area.text)
+        # post _004는 이 함수 안에서 생성했기 때문에 사용할 때 self 붙이면 X
+        self.assertIn(post_004.title, main_area.text)
+
 
     # 댓글 작성 폼 test
     def test_comment_form(self):

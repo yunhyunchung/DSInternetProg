@@ -6,6 +6,7 @@ urlpatterns = [ # 서버IP/blog/ 주소 뒤를 잇는 url 정의
 #   path('<int:pk>/', views.single_post_page),
 #   path('', views.index),  # 서버IP/blog 라면 views.py의 index() 함수 실행
 
+    path('search/<str:q>/', views.PostSearch.as_view()),
     path('update_post/<int:pk>/', views.PostUpdate.as_view()),
     path('create_post/', views.PostCreate.as_view()),
     path('tag/<str:slug>/', views.tag_page),
